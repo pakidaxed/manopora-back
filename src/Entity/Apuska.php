@@ -7,7 +7,7 @@ use App\Repository\ApuskaRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ApuskaRepository::class)]
-#[ApiResource]
+#[ApiResource(security: "is_granted('ROLE_USER')")]
 class Apuska
 {
     #[ORM\Id]

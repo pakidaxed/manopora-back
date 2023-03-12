@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource(
     operations: [
         new Get()
-    ],vuejs 
+    ],
 )]
 class Testy
 {
