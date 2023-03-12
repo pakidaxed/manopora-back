@@ -3,11 +3,16 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\TestyRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TestyRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get()
+    ],vuejs 
+)]
 class Testy
 {
     #[ORM\Id]

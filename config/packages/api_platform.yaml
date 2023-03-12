@@ -1,0 +1,9 @@
+api_platform:
+  title: 'MANOPORA.LT - API'
+  version: '0.0.1'
+  show_webby: false
+  formats:
+    json:
+      mime_types: ['application/json']
+    html:
+      mime_types: ['text/html']
