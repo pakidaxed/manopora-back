@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource()]
-#[UniqueEntity(fields: ['email'], message: 'UNIQUE MUST')]
+#[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,8 +22,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true, nullable: false)]
-    #[Assert\NotBlank(message: 'no no no no bkanies')]
-    #[Assert\NotNull(message: 'ni NULL')]
+    #[Assert\NotBlank()]
+    #[Assert\NotNull()]
     #[Assert\Email]
     private string $email;
 
@@ -34,6 +34,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column(nullable: false)]
+    #[Assert\NotBlank()]
+    #[Assert\NotNull()]
+    #[Assert\Length(
+        min: 5
+    )]
     private string $password;
 
     #[ORM\Column(nullable: false)]
