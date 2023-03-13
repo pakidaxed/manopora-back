@@ -22,8 +22,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true, nullable: false)]
-    #[Assert\NotBlank()]
-    #[Assert\NotNull()]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
     #[Assert\Email]
     private string $email;
 
@@ -34,8 +34,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column(nullable: false)]
-    #[Assert\NotBlank()]
-    #[Assert\NotNull()]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
     #[Assert\Length(
         min: 5
     )]
