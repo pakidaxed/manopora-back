@@ -6,13 +6,15 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\User\UserRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource()]
+//#[ApiResource()]
+#[UniqueEntity(fields: ['username'])]
 #[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -20,6 +22,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(length: 50, unique: true, nullable: false)]
+    #[Assert\NotBlank()]
+    #[Assert\NotNull()]
+    #[Assert\Length(
+        min: 5
+    )]
+    #[Assert\Regex('/^[a-zA-Z0-9_-]*$/')]
+    private string $username;
 
     #[ORM\Column(length: 180, unique: true, nullable: false)]
     #[Assert\NotBlank]
@@ -40,6 +51,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         min: 5
     )]
     private string $password;
+
+    #[ORM\Column(nullable: false)]
+    #[Assert\NotNull()]
+    #[Assert\IsTrue()]
+    private bool $terms;
 
     #[ORM\Column(nullable: false)]
     private DateTimeImmutable $createdAt;
@@ -64,6 +80,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
 
         return $this;
     }
@@ -136,5 +164,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function isTerms(): bool
+    {
+        return $this->terms;
+    }
+
+    public function setTerms(bool $terms): void
+    {
+        $this->terms = $terms;
     }
 }
