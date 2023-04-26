@@ -20,16 +20,14 @@ class LoginController extends AbstractController
             ], 400);
         }
 
-        return $this->json([
-            'user' => $this->getUser() ? $this->getUser()->getUserIdentifier() : null
-        ]);
+        return $this->json(null, 200);
     }
 
     #[Route('/check', name: 'app_check', methods: 'GET')]
     public function check(): JsonResponse
     {
         if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
-            return $this->json(null, 204);
+            return $this->json(['username' => $this->getUser()->getUsername()], 200);
         }
 
         return $this->json(null, 401);

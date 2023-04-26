@@ -23,11 +23,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50, unique: true, nullable: false)]
-    #[Assert\NotBlank()]
-    #[Assert\NotNull()]
+    #[ORM\Column(length: 20, unique: true, nullable: false)]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
     #[Assert\Length(
-        min: 5
+        min: 3
     )]
     #[Assert\Regex('/^[a-zA-Z0-9_-]*$/')]
     private string $username;
