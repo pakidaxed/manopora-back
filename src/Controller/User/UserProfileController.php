@@ -33,7 +33,7 @@ class UserProfileController extends AbstractController
     {
         if (!$this->getUserProfile($this->getUser())) {
             return $this->json([
-                'errors' => ['message' => 'Profilis neužpildytas']
+                'errors' => [['message' => 'Profilis neužpildytas']]
             ], 400);
         }
 
@@ -47,9 +47,9 @@ class UserProfileController extends AbstractController
     {
         $data = json_decode($this->requestStack->getCurrentRequest()->getContent());
 
-        if (!$data) return $this->json(['message' => 'Invalid data'], 400);
+        if (!$data) return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
 
-        $userProfile = $this->getUserProfile($this->getUser());
+        $userProfile = $this->userProfileRepository->findOneByOwner($this->getUser());
 
         if (!$userProfile) {
             $userProfile = new UserProfile();
@@ -75,8 +75,8 @@ class UserProfileController extends AbstractController
         return $this->json('', 201);
     }
 
-    private function getUserProfile(User $user): ?UserProfile
+    private function getUserProfile(User $user): ?array
     {
-        return $this->userProfileRepository->findOneByOwner($user) ?? null;
+        return $this->userProfileRepository->getOneByOwner($user) ?? null;
     }
 }

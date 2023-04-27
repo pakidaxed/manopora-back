@@ -2,6 +2,7 @@
 
 namespace App\Repository\User;
 
+use App\Entity\User\User;
 use App\Entity\User\UserProfile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -37,6 +38,18 @@ class UserProfileRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    public function getOneByOwner(User $user): ?array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o.name', 'o.birthDate', 'o.description' , 'g.name as gender', 'i.name as interest')
+            ->leftJoin('o.gender', 'g')
+            ->leftJoin('o.interest', 'i')
+            ->where('o.owner = :owner')
+            ->setParameter('owner', $user)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
 //    /**

@@ -16,15 +16,15 @@ class PayloadValidationService extends AbstractController
     {
     }
 
-    public function validatePayload(object $entity): ?array
+    public function validatePayload(object $entity, array $constraints = null, string $field = null): ?array
     {
         $errors = [];
-        $validationErrors = $this->validator->validate($entity);
+        $validationErrors = $this->validator->validate($entity, $constraints);
 
         if (count($validationErrors) > 0) {
             foreach ($validationErrors as $error) {
                 $errors[] = [
-                    'field' => $error->getPropertyPath(),
+                    'field' => $field ?? $error->getPropertyPath(),
                     'message' => $error->getMessage()
                 ];
             }
