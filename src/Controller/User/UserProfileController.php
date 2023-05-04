@@ -28,7 +28,7 @@ class UserProfileController extends AbstractController
     {
     }
 
-    #[Route('/user/profile', name: 'user_profile_get', methods: 'GET')]
+    #[Route('/user/me', name: 'user_profile_me_get', methods: 'GET')]
     public function getProfileInfo(): JsonResponse
     {
         if (!$this->getUserProfile($this->getUser())) {
@@ -42,7 +42,7 @@ class UserProfileController extends AbstractController
         ]);
     }
 
-    #[Route('/user/profile', name: 'user_profile_post', methods: 'POST')]
+    #[Route('/user/me', name: 'user_profile_me_post', methods: 'POST')]
     public function updateUserProfile(): JsonResponse
     {
         $data = json_decode($this->requestStack->getCurrentRequest()->getContent());

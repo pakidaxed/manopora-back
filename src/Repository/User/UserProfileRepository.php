@@ -52,6 +52,36 @@ class UserProfileRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findAllUserProfiles(int $offset): ?array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o.id', 'o.name', 'o.description', 'g.name as gender', 'owner.username')
+            ->leftJoin('o.gender', 'g')
+            ->leftJoin('o.interest', 'i')
+            ->leftJoin('o.owner', 'owner')
+            ->where('i.name = :interest')
+            ->setParameter('interest', 'moteris') // TODO PAKEISTI IS PROFILIO
+            ->setFirstResult($offset)
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findSingleUserProfile(?string $username): ?array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o.id', 'o.name', 'o.description', 'g.name as gender', 'owner.username')
+            ->leftJoin('o.gender', 'g')
+            ->leftJoin('o.interest', 'i')
+            ->leftJoin('o.owner', 'owner')
+            ->where('i.name = :interest')
+            ->andWhere('owner.username = :ownerUsername')
+            ->setParameter('interest', 'moteris')
+            ->setParameter('ownerUsername', $username)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 //    /**
 //     * @return UserProfile[] Returns an array of UserProfile objects
 //     */

@@ -38,6 +38,7 @@ security:
          - { path: ^/admin, roles: ROLE_ADMIN }
          - { path: ^/user, roles: ROLE_USER }
          - { path: ^/props, roles: ROLE_USER }
+         - { path: ^/chat, roles: ROLE_USER }
 
 when@test:
     security:

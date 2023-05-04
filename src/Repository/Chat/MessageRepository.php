@@ -2,6 +2,7 @@
 
 namespace App\Repository\Chat;
 
+use App\Entity\Chat\Chat;
 use App\Entity\Chat\Message;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -37,6 +38,20 @@ class MessageRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    public function getAllMessages(Chat $chat): ?array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o.id', 'o.message', 'o.seen', 'o.createdAt', 'sender.username')
+            ->leftJoin('o.owner', 'chat')
+            ->leftJoin('o.sender', 'sender')
+            ->where('o.owner = :owner')
+            ->setParameter('owner', $chat)
+            ->orderBy('o.createdAt', 'ASC')
+            ->setMaxResults(100)
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

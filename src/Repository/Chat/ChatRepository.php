@@ -3,6 +3,7 @@
 namespace App\Repository\Chat;
 
 use App\Entity\Chat\Chat;
+use App\Entity\User\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -37,6 +38,17 @@ class ChatRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    public function findChatByUsers(User $user1, User $user2): ?Chat
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o')
+            ->where('o.userOne IN (:users) AND o.userTwo IN (:users)')
+            ->orWhere('o.userOne IN (:users) AND o.userTwo IN (:users)')
+            ->setParameter('users', [$user1, $user2])
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
 //    /**
