@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\Chat;
 
 use App\Entity\Chat\Chat;
@@ -7,14 +9,6 @@ use App\Entity\User\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Chat>
- *
- * @method Chat|null find($id, $lockMode = null, $lockVersion = null)
- * @method Chat|null findOneBy(array $criteria, array $orderBy = null)
- * @method Chat[]    findAll()
- * @method Chat[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class ChatRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -51,28 +45,22 @@ class ChatRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-//    /**
-//     * @return Chat[] Returns an array of Chat objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Chat
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function findChatListByUser(User $user): ?array
+    {
+        return $this->createQueryBuilder('o')
+            ->select(
+                'o.id',
+                'CASE WHEN o.userOne = :user THEN two.username ELSE one.username END AS user2',
+                'SUM(CASE WHEN message.seen IS NULL OR message.seen = false AND message.sender != :user THEN 1 ELSE 0 END) AS newMessages'
+    )
+            ->innerJoin('o.userOne', 'one')
+            ->innerJoin('o.userTwo', 'two')
+            ->leftJoin('o.messages', 'message', 'WITH', 'message.owner = o')
+            ->where('o.userOne = :user OR o.userTwo = :user')
+            ->setParameter('user', $user)
+            ->groupBy('o.id')
+            ->orderBy('o.updatedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

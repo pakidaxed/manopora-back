@@ -5,6 +5,8 @@ namespace App\Entity\Chat;
 use App\Entity\User\User;
 use App\Repository\Chat\ChatRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ChatRepository::class)]
@@ -26,9 +28,16 @@ class Chat
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Message::class)]
+    private Collection $messages;
+
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable('now');
+        $this->messages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -63,5 +72,20 @@ class Chat
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable('now');
     }
 }

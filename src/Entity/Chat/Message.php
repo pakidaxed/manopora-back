@@ -23,7 +23,7 @@ class Message
     #[ORM\Column(type: Types::TEXT)]
     private ?string $message = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Chat $owner = null;
 

@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\HubInterface;
@@ -24,25 +25,42 @@ use Symfony\Component\Routing\Annotation\Route;
 class ChatController extends AbstractController
 {
     public function __construct(
-        private readonly UserProfileRepository $userProfileRepository,
-        private readonly RequestStack $requestStack,
-        private readonly UserResolverService $userResolverService,
-        private readonly ChatRepository $chatRepository,
+        private readonly UserProfileRepository  $userProfileRepository,
+        private readonly RequestStack           $requestStack,
+        private readonly UserResolverService    $userResolverService,
+        private readonly ChatRepository         $chatRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly MessageRepository $messageRepository,
-        private readonly HubInterface $hub
+        private readonly MessageRepository      $messageRepository,
+        private readonly HubInterface           $hub
     )
     {
     }
 
+    #[Route('/chat/list', name: 'chat_list_get', methods: 'get')]
+    public function getChatList(): JsonResponse
+    {
+
+        $chats = $this->chatRepository->findChatListByUser($this->getUser());
+
+        if (!$chats) {
+            return $this->json(null, 404);
+        }
+
+        return $this->json(['chats' => $chats], 200);
+    }
+
     #[Route('/chat', name: 'chat_messages_get', methods: 'get')]
-    public function getChatMessages(HubInterface $hub): Response
+    public function getChatMessages(): JsonResponse
     {
         $username = $this->requestStack->getCurrentRequest()->get('username') ?? null;
         $user2 = $this->userResolverService->getUser($username);
 
         if (!$user2) {
             return $this->json(null, 404);
+        }
+
+        if ($user2 === $this->getUser()) {
+            return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
         }
 
         $chat = $this->getChatByUsers($this->getUser(), $user2);
@@ -53,6 +71,15 @@ class ChatController extends AbstractController
 
         $messages = $this->messageRepository->getAllMessages($chat);
 
+        foreach ($messages as $message) {
+            if ($message['username'] !== $this->getUser()->getUsername()) {
+                $messageObject = $this->messageRepository->findOneById($message['id']);
+                $messageObject->setSeen(true);
+                $this->entityManager->persist($messageObject);
+            }
+        }
+        $this->entityManager->flush();
+
         if (!$messages) {
             return $this->json(null, 404);
         }
@@ -61,7 +88,7 @@ class ChatController extends AbstractController
     }
 
     #[Route('/chat', name: 'chat_message_post', methods: 'POST')]
-    public function handleMessage(): Response
+    public function handleMessage(): JsonResponse
     {
         $data = json_decode($this->requestStack->getCurrentRequest()->getContent());
 
@@ -79,15 +106,21 @@ class ChatController extends AbstractController
             return $this->json(['errors' => [['message' => 'Invalid data2']]], 400);
         }
 
+        if ($user2 === $this->getUser()) {
+            return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
+        }
+
         $chat = $this->getChatByUsers($this->getUser(), $user2);
 
         if (!$chat) {
             $newChat = new Chat();
             $newChat->setUserOne($this->getUser());
             $newChat->setUserTwo($user2);
-            $this->entityManager->persist($newChat);
             $chat = $newChat;
         }
+
+        $chat->setUpdatedAt();
+        $this->entityManager->persist($chat);
 
         $newMessage = new Message();
         $newMessage->setMessage($data->message);
@@ -97,29 +130,20 @@ class ChatController extends AbstractController
         $this->entityManager->persist($newMessage);
 
         $this->entityManager->flush();
-        $this->publish();
+        $this->publish($user2->getUsername());
 
         return $this->json(null, 200);
     }
 
 
-    public function publish(): void
+    public function publish(string $user2): void
     {
-        $data = json_decode($this->requestStack->getCurrentRequest()->getContent());
+        $update = new Update(
+            'chat/' . $user2,
+            json_encode(null)
+        );
 
-//        dd($data->message);
-//        if($this->getUser() && $this->getUser()->getId() === 1) {
-//            $data = $this->userProfileRepository->findOneById(1);
-////            dd($data);
-            $update = new Update(
-                'chat/2',
-                json_encode(['newMessage' => true])
-            );
-
-            $this->hub->publish($update);
-//        } else {
-//            return $this->json(null, 401);
-//        }
+        $this->hub->publish($update);
     }
 
     private function getChatByUsers(User $user1, User $user2): ?Chat
