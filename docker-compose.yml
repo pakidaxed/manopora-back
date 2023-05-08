@@ -71,6 +71,21 @@ services:
     networks:
       - nginx-php81-mysql8-mercure
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    links:
+      - mysql8
+    environment:
+      MYSQL_USERNAME: 'root'
+      MYSQL_ROOT_PASSWORD: 'secret'
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - nginx-php81-mysql8-mercure
+
 volumes:
 ###> symfony/mercure-bundle ###
   mercure_data:

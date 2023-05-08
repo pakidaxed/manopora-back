@@ -63,6 +63,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ["default" => false])]
     private bool $activated = false;
 
+    #[ORM\OneToOne(mappedBy: 'owner', targetEntity: UserProfile::class)]
+    private UserProfile $userProfile;
+
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable('now');
@@ -174,5 +177,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTerms(bool $terms): void
     {
         $this->terms = $terms;
+    }
+
+    public function getUserProfile(): UserProfile
+    {
+        return $this->userProfile;
     }
 }

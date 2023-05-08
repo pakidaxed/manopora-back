@@ -6,7 +6,9 @@ namespace App\Controller\User;
 
 use App\Entity\User\User;
 use App\Entity\User\UserProfile;
+use App\Repository\Props\CityRepository;
 use App\Repository\User\UserProfileRepository;
+use App\Service\User\CityResolverService;
 use App\Service\User\GenderResolverService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,7 +25,8 @@ class UserProfileController extends AbstractController
         private readonly EntityManagerInterface   $entityManager,
         private readonly RequestStack             $requestStack,
         private readonly PayloadValidationService $payloadValidation,
-        private readonly GenderResolverService    $genderResolver
+        private readonly GenderResolverService    $genderResolver,
+        private readonly CityResolverService      $cityResolver
     )
     {
     }
@@ -47,6 +50,7 @@ class UserProfileController extends AbstractController
     {
         $data = json_decode($this->requestStack->getCurrentRequest()->getContent());
 
+        // TODO REFECTORINANT SUTVARKYUT property_exists
         if (!$data) return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
 
         $userProfile = $this->userProfileRepository->findOneByOwner($this->getUser());
@@ -58,6 +62,7 @@ class UserProfileController extends AbstractController
 
         $userProfile->setName($data->name);
         $profileDate = $data->birthDate ? DateTimeImmutable::createFromFormat('Y-m-d', $data->birthDate) : new \DateTime('today');
+        $userProfile->setCity($this->cityResolver->getCity($data->city));
         $userProfile->setBirthDate($profileDate);
         $userProfile->setGender($this->genderResolver->getGender($data->gender));
         $userProfile->setInterest($this->genderResolver->getGender($data->interest));

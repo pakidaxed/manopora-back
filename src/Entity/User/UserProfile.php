@@ -2,6 +2,7 @@
 
 namespace App\Entity\User;
 
+use App\Entity\Props\City;
 use App\Entity\Props\Gender;
 use App\Repository\User\UserProfileRepository;
 use Doctrine\DBAL\Types\Types;
@@ -31,7 +32,7 @@ class UserProfile
     #[Assert\Length(max: 500)]
     private ?string $description = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
@@ -44,6 +45,10 @@ class UserProfile
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank]
     private ?Gender $interest = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?City $city = null;
 
     public function getId(): ?int
     {
@@ -118,6 +123,18 @@ class UserProfile
     public function setInterest(?Gender $interest): self
     {
         $this->interest = $interest;
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): self
+    {
+        $this->city = $city;
 
         return $this;
     }
