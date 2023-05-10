@@ -9,15 +9,11 @@ use App\Entity\Chat\Message;
 use App\Entity\User\User;
 use App\Repository\Chat\ChatRepository;
 use App\Repository\Chat\MessageRepository;
-use App\Repository\User\UserProfileRepository;
 use App\Service\User\UserResolverService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,7 +21,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class ChatController extends AbstractController
 {
     public function __construct(
-        private readonly UserProfileRepository  $userProfileRepository,
         private readonly RequestStack           $requestStack,
         private readonly UserResolverService    $userResolverService,
         private readonly ChatRepository         $chatRepository,
@@ -66,7 +61,7 @@ class ChatController extends AbstractController
         $chat = $this->getChatByUsers($this->getUser(), $user2);
 
         if (!$chat) {
-            return $this->json(null, 404);
+            return $this->json(null, 200);
         }
 
         $messages = $this->messageRepository->getAllMessages($chat);
@@ -96,14 +91,9 @@ class ChatController extends AbstractController
             return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
         }
 
-        // TODO reik checkint dar kad stringai butu
-        if (!$data->message || !$data->user2) {
-            return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
-        }
-
         $user2 = $this->userResolverService->getUser($data->user2);
         if (!$user2) {
-            return $this->json(['errors' => [['message' => 'Invalid data2']]], 400);
+            return $this->json(['errors' => [['message' => 'No such user']]], 404);
         }
 
         if ($user2 === $this->getUser()) {
@@ -135,6 +125,13 @@ class ChatController extends AbstractController
         return $this->json(null, 200);
     }
 
+    #[Route('/chat/message/count', name: 'chat_message_count_get', methods: 'get')]
+    public function getNewMessagesCount(): JsonResponse
+    {
+        $totalNewMessagesCount = $this->chatRepository->getNewMessagesCount($this->getUser());
+
+        return $this->json(['totalNewMessagesCount' => $totalNewMessagesCount ?? 0], 200);
+    }
 
     public function publish(string $user2): void
     {
@@ -150,5 +147,4 @@ class ChatController extends AbstractController
     {
         return $this->chatRepository->findChatByUsers($user1, $user2) ?? null;
     }
-
 }

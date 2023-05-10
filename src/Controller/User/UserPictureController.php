@@ -36,7 +36,7 @@ class UserPictureController extends AbstractController
         if (!$this->getUserPicturesFromDb($this->getUser())) {
             return $this->json([
                 'mainPicturePath' => $this->userPictureRepository->findMainImagePath($this->getUser()) ?? null,
-                'message' => 'Nėra ne vienos nuotraukos'
+                'message' => 'No pictures'
             ], 400);
         }
 
@@ -45,8 +45,6 @@ class UserPictureController extends AbstractController
             'pictures' => $this->getUserPicturesFromDb($this->getUser())
         ]);
     }
-
-    //TODO refaktorint PATCH reiktu
 
     #[Route('/user/pictures', name: 'user_pictures_post', methods: 'POST')]
     public function updateUserPictures(): JsonResponse
@@ -101,7 +99,7 @@ class UserPictureController extends AbstractController
 
         if (!$userPicture) {
             return $this->json([
-                'errors' => [['field' => 'file', 'message' => 'Nėra tokios nuotraukos']]
+                'errors' => [['field' => 'file', 'message' => 'No such picture']]
             ], 400);
         }
 
@@ -130,7 +128,7 @@ class UserPictureController extends AbstractController
 
         if (!$userPicture) {
             return $this->json([
-                'errors' => [['field' => 'file', 'message' => 'Nėra tokios nuotraukos']]
+                'errors' => [['field' => 'file', 'message' => 'No such picture']]
             ], 400);
         }
 

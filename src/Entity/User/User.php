@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity\User;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\User\UserRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-//#[ApiResource()]
 #[UniqueEntity(fields: ['username'])]
 #[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -24,18 +25,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 20, unique: true, nullable: false)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Privalomas laukas')]
     #[Assert\NotNull]
     #[Assert\Length(
-        min: 3
+        min: 3,
+        max: 20,
+        minMessage: 'Vartotojo vardas turėtų būti ne trumpesnis nei 3 simboliai',
+        maxMessage: 'Vartotojo vardas turėtų būti ne ilgesnis nei 20 simbolių'
     )]
-    #[Assert\Regex('/^[a-zA-Z0-9_-]*$/')]
+    #[Assert\Regex('/^[a-zA-Z0-9_-]*$/', message: 'Negalima naudoti neleistinų simbolių')]
     private string $username;
 
     #[ORM\Column(length: 180, unique: true, nullable: false)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Privalomas laukas')]
     #[Assert\NotNull]
-    #[Assert\Email]
+    #[Assert\Email(message: 'El. pašto adresas privalo būti validus')]
     private string $email;
 
     #[ORM\Column(nullable: false)]
@@ -45,16 +49,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column(nullable: false)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Privalomas laukas')]
     #[Assert\NotNull]
     #[Assert\Length(
-        min: 5
+        min: 5,
+        minMessage: 'Slaptažodis turėtų būti ne trumpesnis nei 5 simboliai',
     )]
     private string $password;
 
     #[ORM\Column(nullable: false)]
     #[Assert\NotNull()]
-    #[Assert\IsTrue()]
+    #[Assert\IsTrue(message: 'Privalomas laukas')]
     private bool $terms;
 
     #[ORM\Column(nullable: false)]
@@ -66,10 +71,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'owner', targetEntity: UserProfile::class)]
     private UserProfile $userProfile;
 
+    #[ORM\OneToMany(mappedBy: 'owner', targetEntity: UserPicture::class)]
+    private Collection $userPictures;
+
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable('now');
+        $this->userPictures = new ArrayCollection();
     }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,7 +116,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
     /**
@@ -182,5 +192,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserProfile(): UserProfile
     {
         return $this->userProfile;
+    }
+
+    public function hasUserProfile(): bool
+    {
+        return isset($this->userProfile);
+    }
+
+    public function getUserPictures(): ?Collection
+    {
+        return $this->userPictures;
     }
 }

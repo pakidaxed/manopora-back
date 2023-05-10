@@ -31,6 +31,15 @@ class RegisterController extends AbstractController
 
         if (!$data) return $this->json(['message' => 'Invalid data'], 400);
 
+        if (
+            !property_exists($data, 'username') ||
+            !property_exists($data, 'email') ||
+            !property_exists($data, 'password') ||
+            !property_exists($data, 'terms')
+        ) {
+            return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
+        }
+
         $user = new User();
         $user->setUsername($data->username ?? '');
         $user->setEmail($data->email ?? '');
@@ -43,7 +52,7 @@ class RegisterController extends AbstractController
             return $this->json($errors, 400);
         }
 
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $data->password)); // if all ok, hash the pass
+        $user->setPassword($this->userPasswordHasher->hashPassword($user, $data->password));
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

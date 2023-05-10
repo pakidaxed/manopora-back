@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\User;
 
 use App\Entity\User\User;
@@ -8,14 +10,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<UserPicture>
- *
- * @method UserPicture|null find($id, $lockMode = null, $lockVersion = null)
- * @method UserPicture|null findOneBy(array $criteria, array $orderBy = null)
- * @method UserPicture[]    findAll()
- * @method UserPicture[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class UserPictureRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -67,29 +61,4 @@ class UserPictureRepository extends ServiceEntityRepository
 
         return $result;
     }
-
-//    /**
-//     * @return UserPicture[] Returns an array of UserPicture objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('u.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?UserPicture
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

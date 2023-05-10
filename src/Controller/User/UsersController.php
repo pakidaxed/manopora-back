@@ -5,18 +5,11 @@ declare(strict_types=1);
 namespace App\Controller\User;
 
 use App\Entity\User\User;
-use App\Entity\User\UserProfile;
 use App\Repository\User\UserProfileRepository;
-use App\Service\User\CityResolverService;
-use App\Service\User\GenderResolverService;
-use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Service\Validation\PayloadValidationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Constraints\Date;
 
 class UsersController extends AbstractController
 {
@@ -24,11 +17,7 @@ class UsersController extends AbstractController
 
     public function __construct(
         private readonly UserProfileRepository    $userProfileRepository,
-        private readonly EntityManagerInterface   $entityManager,
         private readonly RequestStack             $requestStack,
-        private readonly PayloadValidationService $payloadValidation,
-        private readonly GenderResolverService    $genderResolver,
-        private readonly CityResolverService $cityResolver
     )
     {
     }
@@ -60,7 +49,7 @@ class UsersController extends AbstractController
             return $this->json(null, 404);
         }
 
-        return $this->json(['profile' => $singleProfile]);
+        return $this->json(['profile' => $singleProfile], 200);
     }
 
     private function getUserProfiles(User $user, int $offset, ?string $city = null): ?array

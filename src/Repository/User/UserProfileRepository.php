@@ -1,21 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository\User;
 
-use App\Entity\Props\City;
 use App\Entity\User\User;
 use App\Entity\User\UserProfile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<UserProfile>
- *
- * @method UserProfile|null find($id, $lockMode = null, $lockVersion = null)
- * @method UserProfile|null findOneBy(array $criteria, array $orderBy = null)
- * @method UserProfile[]    findAll()
- * @method UserProfile[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class UserProfileRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -62,18 +55,28 @@ class UserProfileRepository extends ServiceEntityRepository
                 'o.name',
                 'o.description',
                 'g.name as gender',
+                'i.interestTitle as interest',
                 'owner.username',
                 'TIMESTAMPDIFF(YEAR, o.birthDate, CURRENT_DATE()) as age',
-                'city.title as cityTitle'
+                'city.title as cityTitle',
+                'CASE WHEN userPicture.main IS NOT NULL THEN userPicture.path ELSE :null END as userMainPicture'
             )
             ->leftJoin('o.gender', 'g')
             ->leftJoin('o.interest', 'i')
             ->leftJoin('o.owner', 'owner')
-            ->leftJoin('o.city', 'city')
-            ->where('i.name = :interest')
+            ->leftJoin('owner.userPictures', 'userPicture', 'WITH', 'userPicture.owner = owner' )
+            ->setParameter('null', NULL)
+            ->leftJoin('o.city', 'city');
+
+        if ($user->hasUserProfile()) {
+            $queryBuilder
+                ->where('g.name = :interest')
+                ->setParameter('interest', $user->getUserProfile()->getInterest()->getName() ?? '');
+        }
+
+        $queryBuilder
             ->andWhere('o.owner != :user')
-            ->setParameter('user', $user)
-            ->setParameter('interest', $user->getUserProfile()->getInterest()->getName());
+            ->setParameter('user', $user);
 
         if ($city) {
             $queryBuilder
@@ -111,29 +114,4 @@ class UserProfileRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-
-//    /**
-//     * @return UserProfile[] Returns an array of UserProfile objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('u.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?UserProfile
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

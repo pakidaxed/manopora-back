@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\User;
 
 use App\Entity\Props\Gender;
@@ -10,8 +12,8 @@ class GenderResolverService
 
     public function __construct(
         private readonly GenderRepository $genderRepository
-    ) {
-
+    )
+    {
     }
 
     public function getGender(?string $gender): ?Gender

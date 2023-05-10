@@ -10,7 +10,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class LoginController extends AbstractController
 {
-    //TODO REIKIA SUTVARKYTI LOGIN FAILER ERROR MESSAGUS, OVERWRITINT onAUTH ir pan, ir kai empty ateina irgi
     #[Route('/login', name: 'app_login', methods: 'POST')]
     public function login(): JsonResponse
     {

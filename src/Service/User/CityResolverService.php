@@ -9,11 +9,10 @@ use App\Repository\Props\CityRepository;
 
 class CityResolverService
 {
-
     public function __construct(
         private readonly CityRepository $cityRepository
-    ) {
-
+    )
+    {
     }
 
     public function getCity(?string $city): ?City

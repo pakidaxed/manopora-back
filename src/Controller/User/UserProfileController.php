@@ -6,7 +6,6 @@ namespace App\Controller\User;
 
 use App\Entity\User\User;
 use App\Entity\User\UserProfile;
-use App\Repository\Props\CityRepository;
 use App\Repository\User\UserProfileRepository;
 use App\Service\User\CityResolverService;
 use App\Service\User\GenderResolverService;
@@ -36,7 +35,7 @@ class UserProfileController extends AbstractController
     {
         if (!$this->getUserProfile($this->getUser())) {
             return $this->json([
-                'errors' => [['message' => 'Profilis neužpildytas']]
+                'errors' => [['message' => 'Profile not ready']]
             ], 400);
         }
 
@@ -50,8 +49,17 @@ class UserProfileController extends AbstractController
     {
         $data = json_decode($this->requestStack->getCurrentRequest()->getContent());
 
-        // TODO REFECTORINANT SUTVARKYUT property_exists
         if (!$data) return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
+
+        if (
+            !property_exists($data, 'name') ||
+            !property_exists($data, 'birthDate') ||
+            !property_exists($data, 'city') ||
+            !property_exists($data, 'gender') ||
+            !property_exists($data, 'interest')
+        ) {
+            return $this->json(['errors' => [['message' => 'Invalid data']]], 400);
+        }
 
         $userProfile = $this->userProfileRepository->findOneByOwner($this->getUser());
 
@@ -66,7 +74,7 @@ class UserProfileController extends AbstractController
         $userProfile->setBirthDate($profileDate);
         $userProfile->setGender($this->genderResolver->getGender($data->gender));
         $userProfile->setInterest($this->genderResolver->getGender($data->interest));
-        $userProfile->setDescription($data->description);
+        $userProfile->setDescription($data->description ?? '');
 
         $errors = $this->payloadValidation->validatePayload($userProfile);
 
@@ -77,7 +85,7 @@ class UserProfileController extends AbstractController
         $this->entityManager->persist($userProfile);
         $this->entityManager->flush();
 
-        return $this->json('', 201);
+        return $this->json(null, 201);
     }
 
     private function getUserProfile(User $user): ?array

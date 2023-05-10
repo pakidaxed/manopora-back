@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Validation;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class PayloadValidationService extends AbstractController

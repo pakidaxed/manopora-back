@@ -9,10 +9,10 @@ use App\Repository\User\UserRepository;
 
 class UserResolverService
 {
-
     public function __construct(
         private readonly UserRepository $userRepository
-    ) {
+    )
+    {
     }
 
     public function getUser(?string $username): ?User
