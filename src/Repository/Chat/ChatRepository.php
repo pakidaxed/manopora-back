@@ -75,6 +75,7 @@ class ChatRepository extends ServiceEntityRepository
             ->select('SUM(CASE WHEN message.seen = FALSE AND (o.userOne = :user OR o.userTwo = :user) THEN 1 ELSE 0 END) AS totalNewMessages')
             ->innerJoin('o.messages', 'message')
             ->where('message.seen = FALSE')
+            ->andWhere('message.sender != :user')
             ->setParameter('user', $user)
             ->getQuery()
             ->getSingleScalarResult();

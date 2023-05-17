@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller\User;
 
 use App\Entity\User\User;
+use App\Repository\User\UserPictureRepository;
 use App\Repository\User\UserProfileRepository;
+use App\Service\User\UserResolverService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -18,6 +20,8 @@ class UsersController extends AbstractController
     public function __construct(
         private readonly UserProfileRepository    $userProfileRepository,
         private readonly RequestStack             $requestStack,
+        private readonly UserResolverService      $userResolverService,
+        private readonly UserPictureRepository    $userPictureRepository
     )
     {
     }
@@ -43,13 +47,20 @@ class UsersController extends AbstractController
     public function getSingleProfileInfo(): JsonResponse
     {
         $username = $this->requestStack->getCurrentRequest()->get('username') ?? null;
-        $singleProfile = $this->getUserProfile($username);
+        $user2Profile = $this->userResolverService->getUser($username);
 
-        if (!$singleProfile) {
+        if (!$user2Profile) {
             return $this->json(null, 404);
         }
 
-        return $this->json(['profile' => $singleProfile], 200);
+        $userProfile = $this->getUserProfile($user2Profile);
+        $allPictures = $this->getAllOtherUserPictures($user2Profile);
+
+        foreach ($allPictures as $picture) {
+            $userProfile['userOtherPictures'][] = $picture;
+        }
+
+        return $this->json(['profile' => $userProfile], 200);
     }
 
     private function getUserProfiles(User $user, int $offset, ?string $city = null): ?array
@@ -57,8 +68,13 @@ class UsersController extends AbstractController
         return $this->userProfileRepository->findAllUserProfiles($user, $offset, $city) ?? null;
     }
 
-    private function getUserProfile(?string $username): ?array
+    private function getUserProfile(User $user): ?array
     {
-        return $this->userProfileRepository->findSingleUserProfile($username) ?? null;
+        return $this->userProfileRepository->findSingleUserProfile($user) ?? null;
+    }
+
+    private function getAllOtherUserPictures(User $user): ?array
+    {
+        return $this->userPictureRepository->getAllOtherUserPictures($user) ?? null;
     }
 }

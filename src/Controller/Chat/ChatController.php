@@ -9,6 +9,7 @@ use App\Entity\Chat\Message;
 use App\Entity\User\User;
 use App\Repository\Chat\ChatRepository;
 use App\Repository\Chat\MessageRepository;
+use App\Repository\User\UserPictureRepository;
 use App\Service\User\UserResolverService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +27,8 @@ class ChatController extends AbstractController
         private readonly ChatRepository         $chatRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly MessageRepository      $messageRepository,
-        private readonly HubInterface           $hub
+        private readonly HubInterface           $hub,
+        private readonly UserPictureRepository  $userPictureRepository
     )
     {
     }
@@ -36,6 +38,10 @@ class ChatController extends AbstractController
     {
 
         $chats = $this->chatRepository->findChatListByUser($this->getUser());
+        foreach ($chats as &$chat)
+            {
+                $chat['mainImage'] = $this->userPictureRepository->findMainImagePath($this->userResolverService->getUser($chat['user2'])) ?? null;
+            }
 
         if (!$chats) {
             return $this->json(null, 404);
@@ -78,6 +84,7 @@ class ChatController extends AbstractController
         if (!$messages) {
             return $this->json(null, 404);
         }
+
 
         return $this->json(['messages' => $messages], 200);
     }

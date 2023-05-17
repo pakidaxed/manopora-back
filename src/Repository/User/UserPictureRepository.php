@@ -7,6 +7,7 @@ namespace App\Repository\User;
 use App\Entity\User\User;
 use App\Entity\User\UserPicture;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -60,5 +61,18 @@ class UserPictureRepository extends ServiceEntityRepository
         }
 
         return $result;
+    }
+
+    public function getAllOtherUserPictures(User $user): ?array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o.id', 'o.path')
+            ->where('o.owner = :user')
+            ->andWhere('o.main = FALSE')
+            ->setParameter('user', $user)
+            ->orderBy('o.createdAt', 'DESC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
     }
 }

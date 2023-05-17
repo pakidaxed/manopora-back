@@ -59,13 +59,12 @@ class UserProfileRepository extends ServiceEntityRepository
                 'owner.username',
                 'TIMESTAMPDIFF(YEAR, o.birthDate, CURRENT_DATE()) as age',
                 'city.title as cityTitle',
-                'CASE WHEN userPicture.main IS NOT NULL THEN userPicture.path ELSE :null END as userMainPicture'
+                'userPicture.path as userMainPicture',
             )
             ->leftJoin('o.gender', 'g')
             ->leftJoin('o.interest', 'i')
             ->leftJoin('o.owner', 'owner')
-            ->leftJoin('owner.userPictures', 'userPicture', 'WITH', 'userPicture.owner = owner' )
-            ->setParameter('null', NULL)
+            ->leftJoin('owner.userPictures', 'userPicture', 'WITH', 'userPicture.owner = owner AND userPicture.main = true')
             ->leftJoin('o.city', 'city');
 
         if ($user->hasUserProfile()) {
@@ -82,7 +81,6 @@ class UserProfileRepository extends ServiceEntityRepository
             $queryBuilder
                 ->andWhere('city.name = :city')
                 ->setParameter('city', $city);
-
         }
 
         $queryBuilder
@@ -93,7 +91,7 @@ class UserProfileRepository extends ServiceEntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
-    public function findSingleUserProfile(?string $username): ?array
+    public function findSingleUserProfile(User $user): ?array
     {
         return $this->createQueryBuilder('o')
             ->select(
@@ -101,16 +99,21 @@ class UserProfileRepository extends ServiceEntityRepository
                 'o.name',
                 'o.description',
                 'g.name as gender',
+                'i.interestTitle as interest',
                 'owner.username',
                 'TIMESTAMPDIFF(YEAR, o.birthDate, CURRENT_DATE()) as age',
-                'city.title as cityTitle'
+                'city.title as cityTitle',
+                'CASE WHEN userPicture.main = true THEN userPicture.path ELSE :null END as userMainPicture',
             )
             ->leftJoin('o.gender', 'g')
             ->leftJoin('o.interest', 'i')
             ->leftJoin('o.owner', 'owner')
             ->leftJoin('o.city', 'city')
-            ->andWhere('owner.username = :ownerUsername')
-            ->setParameter('ownerUsername', $username)
+            ->leftJoin('owner.userPictures', 'userPicture', 'WITH', 'userPicture.owner = owner')
+            ->andWhere('o.owner = :user')
+            ->setParameter('user', $user)
+            ->setParameter('null', NULL)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
