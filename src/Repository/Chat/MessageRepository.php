@@ -42,7 +42,7 @@ class MessageRepository extends ServiceEntityRepository
             ->leftJoin('o.sender', 'sender')
             ->where('o.owner = :owner')
             ->setParameter('owner', $chat)
-            ->orderBy('o.createdAt', 'ASC')
+            ->orderBy('o.createdAt', 'DESC')
             ->setMaxResults(100)
             ->getQuery()
             ->getResult();
