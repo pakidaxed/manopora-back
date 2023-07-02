@@ -1,11 +1,11 @@
 nelmio_cors:
     defaults:
         origin_regex: true
-        allow_origin: ['%env(CORS_ALLOW_ORIGIN)%', 'http://pxd.com']
+        allow_origin: ['%env(CORS_ALLOW_ORIGIN)%', 'http://mp.lt']
         allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
         allow_headers: ['Content-Type', 'Authorization']
         expose_headers: ['Link']
         allow_credentials: true
-        max_age: 3600
+        max_age: 600
     paths:
         '^/': null
